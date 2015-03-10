@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="http://getbootstrap.com/examples/justified-nav/justified-nav.css" rel="stylesheet">
+
+<style>
+body {
+    float: left;
+}
+
+.axis path {
+    fill: none;
+    stroke: #777;
+    shape-rendering: crispEdges;
+}
+.axis text {
+    font-family: Lato;
+    font-size: 13px;
+}
+.d3-tip {
+    line-height: 1;
+    font-weight: bold;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+}
+path { /* This was overriding the color you set in JS */
+    /*stroke: steelblue;
+    stroke-width: 3;
+    fill: none;*/
+}
+.axis path, .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+    stroke-width: 3;
+}
+
+/*.datapoint {
+    r: 6;
+    fill: white;
+    stroke-width: 2;
+}*/
+
+/*.data {
+    stroke: green;
+}*/
+.data:hover {
+    fill: #1f77b4;
+}
+
+/*.data2 {
+    stroke: blue;
+}*/
+.data2:hover {
+    fill: #ff7f0e;
+}
+
+.xlabel, .ylabel {
+    font-weight:bold;
+    font-size:20px;
+}
+
+.container {
+    float: left;
+}
+
+.legend {
+    float: left;
+}
+
+.icon {
+    height: 10px;
+    width: 10px;
+    border-radius: 100%;
+}
+
+.icon-data {
+    background-color: #1f77b4;
+}
+
+.icon-data2 {
+    background-color: #ff7f0e;
+}
+
+ .legend {
+    font-size: 12px;
+  }
+rect {
+    stroke-width: 2;
+  }
+
+</style>
+</head>
+<body>
+    <div class="container"></div> <!-- We don't need a jumbotron div and an SVG to be defined in the HTML. We can render all of that with JS -->
+    <!-- <div class="legend">
+        <!-- SVGs work weirdly here
+        <div class="icon icon-data"></div><span>Educational Activities</span><br>
+        <div class="icon icon-data2"></div><span>Attending Class</span>
+    </div> -->
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script> -->
+<!-- It's better if this code is below the divs it references -->
+<script>
+function InitChart() {
+   //var data = [{'Percentage': 10.7, 'Year': '2006'}, {'Percentage': 8.8, 'Year': '2007'}, {'Percentage': 9.5, 'Year': '2008'}, {'Percentage': 9.4, 'Year': '2009'}, {'Percentage': 9.8, 'Year': '2010'}, {'Percentage': 9.7, 'Year': '2011'}, {'Percentage': 9.9, 'Year': '2012'}, {'Percentage': 9.2, 'Year': '2013'}];
+    //var data2 = [{'Percentage': 8.5, 'Year': '2006'}, {'Percentage': 6.9, 'Year': '2007'}, {'Percentage': 7.3, 'Year': '2008'}, {'Percentage': 7.1, 'Year': '2009'}, {'Percentage': 7.8, 'Year': '2010'}, {'Percentage': 7.4, 'Year': '2011'}, {'Percentage': 7.5, 'Year': '2012'}, {'Percentage': 7.1, 'Year': '2013'}];
+    var data = {{data|safe}}
+		console.log(data);
+	var data2 = {{data2|safe}}
+		console.log(data2)
+    var WIDTH = 1000,
+        HEIGHT = 500,
+        MARGINS = {
+            top: 20,
+            right: 20,
+            bottom: 20,
+            left: 50
+        };
+
+    var vis = d3.select('.container').append('svg') // append the svg at the beginning
+        .attr('height', HEIGHT + MARGINS.bottom) // I changed this so that the x-axis is visible
+        .attr('width', WIDTH), 
+        years = ["2006","2007","2008","2009","2010","2011","2012","2013"], // note what our years are
+        // Since we are dealing with years, we consider them to be strings, not numbers
+        // therefore, use .ordinal() instead of .linear().
+        // It's easier to keep track of what you're doing with d3 variables if you spread them out
+        // line by line. Remember that JavaScript doesn't take space into account (unlike Python)
+        xScale = d3.scale.ordinal() // range is to linear what rangePoints is to ordinal
+            .domain(years)
+            .rangePoints([MARGINS.left, WIDTH - MARGINS.right]),
+        yScale = d3.scale.linear()
+            .domain([0, 15])
+            .range([HEIGHT - MARGINS.top, MARGINS.bottom]),
+        xAxis = d3.svg.axis()
+            .scale(xScale),
+        yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+    
+    vis.append("g") // Now vis IS the svg, we don't need to use 'svg:g' here
+        .attr("class", "axis") 
+        // If you want us to know this is the x-axis in particular, use a better class than 'x'. Perhaps 
+        // use an ID instead, like "x-axis".
+        .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+        .call(xAxis);
+    vis.append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate(" + (MARGINS.left) + ",0)")
+        .call(yAxis);
+
+    // I would suggest looking at my current index.html file's JS code for reference.
+    // title
+    vis.append("text")
+        .attr("x", (WIDTH / 2))             
+        .attr("y", MARGINS.top)
+        .attr("text-anchor", "middle")  
+        .style("font-size", "24px") 
+        .style("font-weight", "bold")
+        .text("Education");
+    // y-axis title
+    vis.append("text")
+      .attr("y", 0 - MARGINS.left) // x and y switched due to rotation
+      .attr("x", 0 - (HEIGHT / 2))
+      // I don't exactly know what this does. It might align the text differently than its y-value
+      .attr("dy", "4em") 
+      .attr("transform", "rotate(-90)")
+      .style("text-anchor", "middle")
+      .style("font-size", "16px") 
+      .style("font-weight", "bold")
+      .text("Percentage Engagement");
+    // x-axis title
+    vis.append("text")
+      .attr("class", "xlabel")
+      .attr("text-anchor", "middle")
+      .style("font-size", "16px") 
+      .style("font-weight", "bold")
+      .attr("x", WIDTH / 2)
+      .attr("y", HEIGHT + MARGINS.bottom)
+      // .attr("dy", "-1em") 
+      .text("Year");
+
+    var lineGen = d3.svg.line()
+        .x(function(d) {
+            return xScale(d.Year);
+        })
+        .y(function(d) {
+            return yScale(d.Percentage);
+        });
+        //.interpolate("basis"); // I'm not sure if we want to use smoothing. That's a discussion
+
+    vis.append('path')
+        .attr('d', lineGen(data))
+        .attr('stroke', '#1f77b4')
+        .attr('stroke-width', 2)
+        .attr('fill', 'none');
+    vis.append('path')
+        .attr('d', lineGen(data2))
+        .attr('stroke', '#ff7f0e')
+        .attr('stroke-width', 2)
+        .attr('fill', 'none');
+    
+    vis.selectAll(".dot") // dots for data
+      .data(data)
+      .enter().append("circle")
+      .attr('class', 'datapoint data') // datapoint is general class, data is more specific one
+      .attr('cx', function(d) { return xScale(d.Year); })
+      .attr('cy', function(d) { return yScale(d.Percentage); })
+      .attr('r', 6)
+      .attr('fill', 'white')
+      .attr('stroke', '#1f77b4')
+      .attr('stroke-width', '2');
+
+    vis.selectAll(".dot") // dots for data2
+      .data(data2)
+      .enter().append("circle")
+      .attr('class', 'datapoint data2')
+      .attr('cx', function(d) { return xScale(d.Year); })
+      // This references the scaling defined above. Otherwise the values you enter won't mean anything
+      // relative to the SVG. 
+      .attr('cy', function(d) { return yScale(d.Percentage); })
+      .attr('r', 6)
+      .attr('fill', 'white')
+      .attr('stroke', '#ff7f0e')
+      .attr('stroke-width', '2');
+
+    // var rect = vis.append('rect')
+    //     .attr('height','100px')
+    //     .attr('width','100px')
+    //     .attr('x', WIDTH + MARGINS.right)
+    //     .attr('y', HEIGHT / 2 - 100) // the 100 is its height
+    //     .attr('fill','white')
+    //     .attr('stroke','black')
+    //     .attr('stroke-width',2);
+
+    // rect.append('circle')
+    //     .attr('height',0)
+    //     .attr('width',0)
+    //     .attr('stroke','green')
+    //     .attr('fill', 'white')
+    //     .attr('stroke-width', '2');
+	
+	var color = d3.scale.category10();
+	
+	var legend = vis.selectAll(".legend")
+            // our data is the array of colors we created earlier
+            .data(color.domain().slice().reverse())
+         .enter().append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+       // fill it with 18 x 18 rectangles in the colors
+       legend.append("rect")
+            .attr("x", WIDTH + 8)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", color);
+       // and add text 
+       legend.append("text")
+           .attr("x", WIDTH - 4)
+           .attr("y", 9)
+           .attr("dy", ".35em")
+           .style("text-anchor", "end")
+           .text(function(d) { return d.Activity; });
+  
+  
+
+    
+}
+InitChart();
+</script>
+</body>
+</html>

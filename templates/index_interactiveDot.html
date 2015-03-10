@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+  <body>
+    
+    <style>
+      .d3-tip {
+        line-height: 1;
+        font-weight: bold;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        border-radius: 2px;
+      }
+      path {
+        stroke: steelblue;
+        stroke-width: 3;
+        fill: none;
+      }
+      .axis path, .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+      .datapoint:hover{
+	fill: steelblue;
+      }
+      .xlabel, .ylabel {
+        font-weight:bold;
+	font-size:20px;
+      }
+    </style>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+<script>
+// plot a graph of miles vs. time
+var data = [{'Percentage': 10.7, 'Year': '2006'}, {'Percentage': 8.8, 'Year': '2007'}, {'Percentage': 9.5, 'Year': '2008'}, {'Percentage': 9.4, 'Year': '2009'}, {'Percentage': 9.8, 'Year': '2010'}, {'Percentage': 9.7, 'Year': '2011'}, {'Percentage': 9.9, 'Year': '2012'}, {'Percentage': 9.2, 'Year': '2013'}]
+
+/*
+function parser(d) {
+    d.pPercentage = +d.Percentage;
+	d.pYear = +d.Year;
+    //d.pOdometer = +d.Odometer;
+    //d.pDate = new Date(d.Date);
+    return d;
+}
+*/
+
+//var format = d3.time.format("%m/%d/%Y");
+
+function milesovertime(data) {
+    var margin = {top: 30, right: 30, bottom: 75, left: 100};
+    var width = 500 - margin.left - margin.right;
+    var height = 400 - margin.top - margin.bottom;
+
+    //var minDate = csvdata[0].pDate;
+    //var maxDate = csvdata[csvdata.length - 1].pDate;
+	//console.log(maxDate);
+    // Set up time based x axis
+    var x = d3.time.scale()
+	  .domain([2006, 2013])
+	  .range([0, width]);
+
+    var y = d3.scale.linear()
+	  .domain([0, 15])
+	  .range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+	  .scale(x)
+	  .ticks(10)
+	  .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+	  .scale(y)
+	  .ticks(7)
+	  .orient("left");
+
+    // put the graph in the "miles" div
+    var svg = d3.select("#miles").append("svg")
+	  .attr("width", width + margin.left + margin.right)
+	  .attr("height", height + margin.top + margin.bottom)
+	  .append("g")
+	  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // function to draw the line
+    var line = d3.svg.line()
+	.x(function(d) { return x(d.Year); } )
+	.y(function(d) { return y(d.Percentage); } );
+
+    //Mouseover tip
+    var tip = d3.tip()
+	.attr('class', 'd3-tip')
+	.offset([120, 40])
+	.html(function(d) {
+	    return "<strong>" +
+                " The percentag is </strong><br>" +
+		d.Percentage + " at year " + d.Year+"<br>";
+	});
+
+    svg.call(tip);
+
+    // add the x axis and x-label
+    svg.append("g")
+	  .attr("class", "x axis")
+	  .attr("transform", "translate(0," + height + ")")
+	  .call(xAxis)
+	  .selectAll("text")
+	  .attr("y", 9)
+	  .attr("x", 9)
+	  .attr("dy", ".35em")
+	  .attr("transform", "rotate(45)")
+	  .style("text-anchor", "start");
+    svg.append("text")
+	  .attr("class", "xlabel")
+	  .attr("text-anchor", "middle")
+	  .attr("x", width / 2)
+	  .attr("y", height + margin.bottom)
+	  .text("Year");
+
+    // add the y axis and y-label
+    svg.append("g")
+	  .attr("class", "y axis")
+	  .attr("transform", "translate(0,0)")
+	  .call(yAxis);
+    svg.append("text")
+	  .attr("class", "ylabel")
+	  .attr("y", 0 - margin.left) // x and y switched due to rotation!!
+	  .attr("x", 0 - (height / 2))
+	  .attr("dy", "1em")
+	  .attr("transform", "rotate(-90)")
+	  .style("text-anchor", "middle")
+	  .text("Percentage Engagement");
+
+    svg.append("text")
+	  .attr("class", "graphtitle")
+	  .attr("y", 10)
+	  .attr("x", width/2)
+	  .style("text-anchor", "middle")
+	  .text("Education Engagement from 2006 to 2013");
+
+    // draw the line
+    svg.append("path")
+	  .attr("d", line(data));
+
+    svg.selectAll(".dot")
+	  .data(data)
+	  .enter().append("circle")
+	  .attr('class', 'datapoint')
+	  .attr('cx', function(d) { return x(d.Year); })
+	  .attr('cy', function(d) { return y(d.Percentage); })
+	  .attr('r', 6)
+	  .attr('fill', 'white')
+	  .attr('stroke', 'steelblue')
+	  .attr('stroke-width', '3')
+	  .on('mouseover', tip.show)
+	  .on('mouseout', tip.hide);
+}
+// Read in .csv data and make graph
+//d3.csv("prius_gas.csv", parser,
+//function(error, data) {
+milesovertime(data);
+//	   }
+//}); 
+	
+</script>
+    <div id="miles" class="graph"></div>
+  </body>
+</html>
